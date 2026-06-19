@@ -31,7 +31,8 @@ internal static class MacOsCoreAudio
 
         if (status != NoError || deviceId == 0)
         {
-            throw new InvalidOperationException("无法读取 macOS 当前默认输入设备。");
+            throw new InvalidOperationException(
+                $"无法读取 macOS 当前默认输入设备: CoreAudio status {status}, device id {deviceId}。");
         }
 
         return deviceId;

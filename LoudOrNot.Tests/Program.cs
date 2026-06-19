@@ -1,92 +1,46 @@
 using LoudOrNot.Application.Audio;
-using LoudOrNot.Domain.Audio;
-using LoudOrNot.Presentation.Worker;
-using Microsoft.Extensions.Logging;
+using LoudOrNot.Infrastructure.Audio.Linux;
+using LoudOrNot.Infrastructure.Audio.MacOs;
+using LoudOrNot.Infrastructure.Audio.Windows;
 
-var logger = new CapturingLogger<Worker>();
-var ambientSplService = new FakeAmbientSplService();
-var worker = new Worker(logger, ambientSplService);
-
-await worker.StartAsync(CancellationToken.None);
-await Task.Delay(TimeSpan.FromMilliseconds(2500));
-await worker.StopAsync(CancellationToken.None);
-
-Console.WriteLine("Captured measurements:");
-foreach (var message in logger.Messages)
+var inputAudioDeviceProvider = CreateInputAudioDeviceProvider();
+try
 {
-    Console.WriteLine(message);
+    var inputAudioDevice = inputAudioDeviceProvider.GetCurrentDefaultInputDevice();
+    var ambientSplService = new AmbientSplService(inputAudioDeviceProvider);
+
+    Console.WriteLine($"Using input device: {inputAudioDevice.Name} ({inputAudioDevice.Platform})");
+
+    for (var index = 0; index < 5; index++)
+    {
+        var ambientSpl = ambientSplService.MeasureInstantaneousAmbientSpl();
+
+        Console.WriteLine(
+            "{0:O} {1:F2} dB by {2}",
+            ambientSpl.DateTime,
+            ambientSpl.Spl,
+            ambientSpl.Sensor.Name);
+
+        if (index < 4)
+            await Task.Delay(TimeSpan.FromSeconds(1));
+    }
+
+    return 0;
 }
-
-if (ambientSplService.MeasurementCount < 3)
+catch (Exception exception)
 {
-    Console.Error.WriteLine(
-        $"Expected at least 3 measurements in 2.5 seconds, got {ambientSplService.MeasurementCount}.");
+    Console.Error.WriteLine($"Real audio input measurement failed: {exception.Message}");
     return 1;
 }
 
-Console.WriteLine($"OK: measured {ambientSplService.MeasurementCount} times.");
-return 0;
-
-internal sealed class FakeAmbientSplService : IAmbientSplService
+static IInputAudioDeviceProvider CreateInputAudioDeviceProvider()
 {
-    private readonly FakeSplSensor _sensor = new();
-    private readonly List<InstantaneousAmbientSpl> _measurements = [];
+    if (OperatingSystem.IsMacOS())
+        return new MacOsInputAudioDeviceProvider();
+    if (OperatingSystem.IsLinux())
+        return new LinuxInputAudioDeviceProvider();
+    if (OperatingSystem.IsWindows())
+        return new WindowsInputAudioDeviceProvider();
 
-    public int MeasurementCount => _measurements.Count;
-
-    public InstantaneousAmbientSpl MeasureInstantaneousAmbientSpl()
-    {
-        var measurement = new InstantaneousAmbientSpl(
-            DateTime.UtcNow,
-            42 + _measurements.Count,
-            _sensor);
-
-        _measurements.Add(measurement);
-        return measurement;
-    }
-
-    public List<InstantaneousAmbientSpl> GetHistoricalInstantaneousAmbientSpls() => [.. _measurements];
-
-    public List<InstantaneousAmbientSpl> GetHistoricalInstantaneousAmbientSplsAfter(DateTime dateTime) =>
-        _measurements.Where(measurement => measurement.DateTime > dateTime).ToList();
-
-    public List<InstantaneousAmbientSpl> GetHistoricalInstantaneousAmbientSplsBefore(DateTime dateTime) =>
-        _measurements.Where(measurement => measurement.DateTime < dateTime).ToList();
-
-    public List<InstantaneousAmbientSpl> GetHistoricalInstantaneousAmbientSplsBetween(
-        DateTime beginDateTime,
-        DateTime endDateTime) =>
-        _measurements
-            .Where(measurement => measurement.DateTime >= beginDateTime && measurement.DateTime <= endDateTime)
-            .ToList();
-}
-
-internal sealed class FakeSplSensor : ISplSensor
-{
-    public string Name => "Fake SPL Sensor";
-    public string Description => "Deterministic sensor for worker smoke tests.";
-
-    public InstantaneousAmbientSpl MeasureInstantaneousAmbientSpl() =>
-        new(DateTime.UtcNow, 42, this);
-}
-
-internal sealed class CapturingLogger<T> : ILogger<T>
-{
-    public List<string> Messages { get; } = [];
-
-    public IDisposable? BeginScope<TState>(TState state)
-        where TState : notnull =>
-        null;
-
-    public bool IsEnabled(LogLevel logLevel) => true;
-
-    public void Log<TState>(
-        LogLevel logLevel,
-        EventId eventId,
-        TState state,
-        Exception? exception,
-        Func<TState, Exception?, string> formatter)
-    {
-        Messages.Add(formatter(state, exception));
-    }
+    throw new PlatformNotSupportedException("当前操作系统不支持自动选择默认输入设备。");
 }
