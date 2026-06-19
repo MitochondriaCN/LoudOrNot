@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoudOrNot", "LoudOrNot.csproj", "{96F9BEB0-FE41-4256-8EA3-95C0DA9BE56C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoudOrNot.Tests", "LoudOrNot.Tests\LoudOrNot.Tests.csproj", "{B95BB94A-E41A-4C32-81D6-73DD717055CA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{96F9BEB0-FE41-4256-8EA3-95C0DA9BE56C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{96F9BEB0-FE41-4256-8EA3-95C0DA9BE56C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{96F9BEB0-FE41-4256-8EA3-95C0DA9BE56C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B95BB94A-E41A-4C32-81D6-73DD717055CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B95BB94A-E41A-4C32-81D6-73DD717055CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B95BB94A-E41A-4C32-81D6-73DD717055CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B95BB94A-E41A-4C32-81D6-73DD717055CA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
