@@ -8,6 +8,8 @@ public class Worker(
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        await Task.Yield();
+
         while (!stoppingToken.IsCancellationRequested)
         {
             try
@@ -23,6 +25,10 @@ public class Worker(
             catch (NotSupportedException exception)
             {
                 logger.LogWarning(exception, "当前平台尚未配置可用的声压级采样后端。");
+            }
+            catch (Exception exception)
+            {
+                logger.LogWarning(exception, "声压级采样失败。");
             }
 
             await Task.Delay(1000, stoppingToken);

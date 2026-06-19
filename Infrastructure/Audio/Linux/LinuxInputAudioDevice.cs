@@ -15,7 +15,6 @@ public class LinuxInputAudioDevice(
 
     public ISplSensor GetSplSensor()
     {
-        throw new NotSupportedException(
-            $"当前默认输入设备已解析为 \"{Name}\"，但尚未配置 {Platform} 的麦克风采样后端。");
+        return new LinuxAlsaSplSensor(Id, Name);
     }
 }
