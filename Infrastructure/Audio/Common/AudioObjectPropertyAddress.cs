@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace LoudOrNot.Services.Implementations;
+namespace LoudOrNot.Infrastructure.Audio.Common;
 
 [StructLayout(LayoutKind.Sequential)]
 internal struct AudioObjectPropertyAddress(

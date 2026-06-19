@@ -1,6 +1,6 @@
-using LoudOrNot.Models;
+using LoudOrNot.Domain.Audio;
 
-namespace LoudOrNot.Services.Abstractions;
+namespace LoudOrNot.Application.Audio;
 
 public interface IInputAudioDeviceProvider
 {

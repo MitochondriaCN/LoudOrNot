@@ -1,7 +1,6 @@
-using LoudOrNot.Models;
-using LoudOrNot.Services.Abstractions;
+using LoudOrNot.Domain.Audio;
 
-namespace LoudOrNot.Services.Implementations;
+namespace LoudOrNot.Application.Audio;
 
 public sealed class AmbientSplService(IInputAudioDeviceProvider inputAudioDeviceProvider) : IAmbientSplService
 {

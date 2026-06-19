@@ -1,10 +1,10 @@
-using LoudOrNot.Services.Abstractions;
-using LoudOrNot.Services.Implementations;
-using LoudOrNot.Services.Implementations.Linux;
-using LoudOrNot.Services.Implementations.MacOs;
-using LoudOrNot.Services.Implementations.Windows;
+using LoudOrNot.Application.Audio;
+using LoudOrNot.Infrastructure.Audio.Linux;
+using LoudOrNot.Infrastructure.Audio.MacOs;
+using LoudOrNot.Infrastructure.Audio.Windows;
+using LoudOrNot.Presentation.Worker;
 
-namespace LoudOrNot;
+namespace LoudOrNot.CompositionRoot;
 
 public class Program
 {

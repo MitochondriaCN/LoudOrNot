@@ -1,6 +1,6 @@
-using LoudOrNot.Services.Abstractions;
+using LoudOrNot.Application.Audio;
 
-namespace LoudOrNot;
+namespace LoudOrNot.Presentation.Worker;
 
 public class Worker(
     ILogger<Worker> logger,

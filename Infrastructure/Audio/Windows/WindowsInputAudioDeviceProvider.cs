@@ -1,7 +1,7 @@
-using LoudOrNot.Models;
-using LoudOrNot.Services.Abstractions;
+using LoudOrNot.Application.Audio;
+using LoudOrNot.Domain.Audio;
 
-namespace LoudOrNot.Services.Implementations.Windows;
+namespace LoudOrNot.Infrastructure.Audio.Windows;
 
 public class WindowsInputAudioDeviceProvider : IInputAudioDeviceProvider
 {

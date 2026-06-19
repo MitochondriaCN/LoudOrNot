@@ -1,4 +1,4 @@
-namespace LoudOrNot.Models;
+namespace LoudOrNot.Domain.Audio;
 
 public record InstantaneousAmbientSpl(
     DateTime DateTime,

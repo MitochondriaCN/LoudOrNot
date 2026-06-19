@@ -1,6 +1,6 @@
-using LoudOrNot.Models;
+using LoudOrNot.Domain.Audio;
 
-namespace LoudOrNot.Services.Implementations.Windows;
+namespace LoudOrNot.Infrastructure.Audio.Windows;
 
 public class WindowsInputAudioDevice(
     string id,

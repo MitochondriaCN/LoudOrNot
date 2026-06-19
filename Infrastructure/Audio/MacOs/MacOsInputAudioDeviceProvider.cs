@@ -1,7 +1,7 @@
-using LoudOrNot.Models;
-using LoudOrNot.Services.Abstractions;
+using LoudOrNot.Application.Audio;
+using LoudOrNot.Domain.Audio;
 
-namespace LoudOrNot.Services.Implementations.MacOs;
+namespace LoudOrNot.Infrastructure.Audio.MacOs;
 
 public class MacOsInputAudioDeviceProvider : IInputAudioDeviceProvider
 {

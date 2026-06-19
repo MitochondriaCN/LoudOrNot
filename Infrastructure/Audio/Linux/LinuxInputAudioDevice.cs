@@ -1,8 +1,8 @@
-using LoudOrNot.Models;
+using LoudOrNot.Domain.Audio;
 
-namespace LoudOrNot.Services.Implementations.MacOs;
+namespace LoudOrNot.Infrastructure.Audio.Linux;
 
-public class MacOsInputAudioDevice(
+public class LinuxInputAudioDevice(
     string id,
     string name,
     string description,
