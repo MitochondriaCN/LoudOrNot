@@ -9,6 +9,8 @@ public interface IAmbientSplService
 {
     InstantaneousAmbientSpl MeasureInstantaneousAmbientSpl();
 
+    InstantaneousAmbientSpl MeasureInstantaneousAmbientSpl(IInputAudioDevice inputAudioDevice);
+
     List<InstantaneousAmbientSpl> GetHistoricalInstantaneousAmbientSpls();
 
     List<InstantaneousAmbientSpl> GetHistoricalInstantaneousAmbientSplsAfter(DateTime dateTime);

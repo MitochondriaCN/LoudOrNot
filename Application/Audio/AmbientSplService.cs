@@ -9,9 +9,12 @@ public sealed class AmbientSplService(IInputAudioDeviceProvider inputAudioDevice
 
     public InstantaneousAmbientSpl MeasureInstantaneousAmbientSpl()
     {
-        var sensor = inputAudioDeviceProvider
-            .GetCurrentDefaultInputDevice()
-            .GetSplSensor();
+        return MeasureInstantaneousAmbientSpl(inputAudioDeviceProvider.GetCurrentDefaultInputDevice());
+    }
+
+    public InstantaneousAmbientSpl MeasureInstantaneousAmbientSpl(IInputAudioDevice inputAudioDevice)
+    {
+        var sensor = inputAudioDevice.GetSplSensor();
         var instantaneousAmbientSpl = sensor.MeasureInstantaneousAmbientSpl();
 
         lock (_historyLock)

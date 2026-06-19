@@ -15,6 +15,6 @@ public class MacOsInputAudioDevice(
 
     public ISplSensor GetSplSensor()
     {
-        return new MacOsAudioQueueSplSensor(Name);
+        return new MacOsAudioQueueSplSensor(Id, Name);
     }
 }

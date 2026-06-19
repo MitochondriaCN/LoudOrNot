@@ -4,7 +4,7 @@ using LoudOrNot.Infrastructure.Audio.Common;
 
 namespace LoudOrNot.Infrastructure.Audio.Windows;
 
-public sealed class WindowsWaveInSplSensor(string deviceName) : ISplSensor
+public sealed class WindowsWaveInSplSensor(string deviceId, string deviceName) : ISplSensor
 {
     private const int WaveMapper = -1;
     private const int WaveFormatPcm = 1;
@@ -13,12 +13,12 @@ public sealed class WindowsWaveInSplSensor(string deviceName) : ISplSensor
     private const int WhdrDone = 1;
 
     public string Name { get; } = $"{deviceName} waveIn SPL sensor";
-    public string Description { get; } = "通过 Windows waveIn 采集默认输入设备 PCM 数据并估算瞬时声压级。";
+    public string Description { get; } = "通过 Windows waveIn 采集指定输入设备 PCM 数据并估算瞬时声压级。";
 
     public InstantaneousAmbientSpl MeasureInstantaneousAmbientSpl()
     {
         var format = WaveFormat.CreatePcm16Mono();
-        var result = waveInOpen(out var waveIn, WaveMapper, ref format, IntPtr.Zero, IntPtr.Zero, CallbackNull);
+        var result = waveInOpen(out var waveIn, ToWaveInDeviceId(deviceId), ref format, IntPtr.Zero, IntPtr.Zero, CallbackNull);
         ThrowIfWaveError(result, "打开 Windows 输入设备失败");
 
         var buffer = new byte[SplSamplingConstants.SampleByteCount];
@@ -74,6 +74,13 @@ public sealed class WindowsWaveInSplSensor(string deviceName) : ISplSensor
         }
 
         throw new InvalidOperationException($"{message}: MMSYSERR {result}");
+    }
+
+    private static int ToWaveInDeviceId(string id)
+    {
+        return string.Equals(id, "default", StringComparison.OrdinalIgnoreCase)
+            ? WaveMapper
+            : int.Parse(id);
     }
 
     [StructLayout(LayoutKind.Sequential)]

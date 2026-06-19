@@ -4,15 +4,17 @@ using LoudOrNot.Infrastructure.Audio.Common;
 
 namespace LoudOrNot.Infrastructure.Audio.MacOs;
 
-public sealed class MacOsAudioQueueSplSensor(string deviceName) : ISplSensor
+public sealed class MacOsAudioQueueSplSensor(string deviceUid, string deviceName) : ISplSensor
 {
     private const uint AudioFormatLinearPcm = 0x6C70636D;
     private const uint AudioFormatFlagIsSignedInteger = 4;
     private const uint AudioFormatFlagIsPacked = 8;
+    private const uint AudioQueuePropertyCurrentDevice = 0x61716364;
+    private const uint CFStringEncodingUtf8 = 0x08000100;
     private const int NoError = 0;
 
     public string Name { get; } = $"{deviceName} AudioQueue SPL sensor";
-    public string Description { get; } = "通过 macOS AudioQueue 采集默认输入设备 PCM 数据并估算瞬时声压级。";
+    public string Description { get; } = "通过 macOS AudioQueue 采集指定输入设备 PCM 数据并估算瞬时声压级。";
 
     public InstantaneousAmbientSpl MeasureInstantaneousAmbientSpl()
     {
@@ -27,6 +29,8 @@ public sealed class MacOsAudioQueueSplSensor(string deviceName) : ISplSensor
         var state = new CaptureState();
         var stateHandle = GCHandle.Alloc(state);
         var queue = IntPtr.Zero;
+        var currentDeviceUid = IntPtr.Zero;
+        var currentDeviceUidPropertyData = IntPtr.Zero;
         AudioQueueInputCallbackDelegate callback = AudioQueueInputCallback;
 
         try
@@ -41,6 +45,21 @@ public sealed class MacOsAudioQueueSplSensor(string deviceName) : ISplSensor
                 0,
                 out queue);
             ThrowIfAudioQueueError(result, "创建 macOS 输入音频队列失败");
+
+            currentDeviceUid = CFStringCreateWithCString(IntPtr.Zero, deviceUid, CFStringEncodingUtf8);
+            if (currentDeviceUid == IntPtr.Zero)
+            {
+                throw new InvalidOperationException($"创建 macOS 输入设备 UID 失败: {deviceUid}");
+            }
+
+            currentDeviceUidPropertyData = Marshal.AllocHGlobal(IntPtr.Size);
+            Marshal.WriteIntPtr(currentDeviceUidPropertyData, currentDeviceUid);
+            result = AudioQueueSetProperty(
+                queue,
+                AudioQueuePropertyCurrentDevice,
+                currentDeviceUidPropertyData,
+                (uint)IntPtr.Size);
+            ThrowIfAudioQueueError(result, $"设置 macOS 输入设备失败: {deviceName} ({deviceUid})");
 
             result = AudioQueueAllocateBuffer(queue, SplSamplingConstants.SampleByteCount, out var audioBuffer);
             ThrowIfAudioQueueError(result, "分配 macOS 输入音频缓冲区失败");
@@ -71,6 +90,16 @@ public sealed class MacOsAudioQueueSplSensor(string deviceName) : ISplSensor
             {
                 AudioQueueStop(queue, 1);
                 AudioQueueDispose(queue, 1);
+            }
+
+            if (currentDeviceUidPropertyData != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(currentDeviceUidPropertyData);
+            }
+
+            if (currentDeviceUid != IntPtr.Zero)
+            {
+                CFRelease(currentDeviceUid);
             }
 
             stateHandle.Free();
@@ -192,6 +221,13 @@ public sealed class MacOsAudioQueueSplSensor(string deviceName) : ISplSensor
         out IntPtr outBuffer);
 
     [DllImport("/System/Library/Frameworks/AudioToolbox.framework/AudioToolbox")]
+    private static extern int AudioQueueSetProperty(
+        IntPtr inAQ,
+        uint inID,
+        IntPtr inData,
+        uint inDataSize);
+
+    [DllImport("/System/Library/Frameworks/AudioToolbox.framework/AudioToolbox")]
     private static extern int AudioQueueEnqueueBuffer(
         IntPtr inAQ,
         IntPtr inBuffer,
@@ -212,4 +248,13 @@ public sealed class MacOsAudioQueueSplSensor(string deviceName) : ISplSensor
     private static extern int AudioQueueDispose(
         IntPtr inAQ,
         byte inImmediate);
+
+    [DllImport("/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation")]
+    private static extern IntPtr CFStringCreateWithCString(
+        IntPtr alloc,
+        string cStr,
+        uint encoding);
+
+    [DllImport("/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation")]
+    private static extern void CFRelease(IntPtr cf);
 }

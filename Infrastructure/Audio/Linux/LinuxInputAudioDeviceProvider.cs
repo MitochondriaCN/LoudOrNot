@@ -8,6 +8,32 @@ public class LinuxInputAudioDeviceProvider : IInputAudioDeviceProvider
 {
     private const string DefaultDeviceId = "default";
 
+    public IReadOnlyList<IInputAudioDevice> GetInputDevices()
+    {
+        var sources = TryRunProcess("pactl", "list short sources");
+        if (!string.IsNullOrWhiteSpace(sources))
+        {
+            var devices = sources
+                .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(line => line.Split('\t', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                .Where(columns => columns.Length >= 2)
+                .Select(columns => new LinuxInputAudioDevice(
+                    columns[1],
+                    columns[1],
+                    "PulseAudio/PipeWire 输入源",
+                    "Linux"))
+                .Cast<IInputAudioDevice>()
+                .ToList();
+
+            if (devices.Count > 0)
+            {
+                return devices;
+            }
+        }
+
+        return [GetCurrentDefaultInputDevice()];
+    }
+
     public IInputAudioDevice GetCurrentDefaultInputDevice()
     {
         var defaultSource = TryRunProcess("pactl", "get-default-source");

@@ -15,6 +15,6 @@ public class WindowsInputAudioDevice(
 
     public ISplSensor GetSplSensor()
     {
-        return new WindowsWaveInSplSensor(Name);
+        return new WindowsWaveInSplSensor(Id, Name);
     }
 }
