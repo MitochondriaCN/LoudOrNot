@@ -1,7 +1,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace LoudOrNot.Services.Implementations;
+namespace LoudOrNot.Services.Implementations.MacOs;
 
 internal static class MacOsCoreAudio
 {
