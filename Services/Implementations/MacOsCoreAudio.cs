@@ -101,5 +101,4 @@ internal static class MacOsCoreAudio
 
     [DllImport("/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation")]
     private static extern void CFRelease(IntPtr cf);
-
 }

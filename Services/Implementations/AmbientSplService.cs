@@ -3,15 +3,16 @@ using LoudOrNot.Services.Abstractions;
 
 namespace LoudOrNot.Services.Implementations;
 
-public sealed class AmbientSplService(IDefaultInputSplSensorProvider defaultInputSplSensorProvider)
-    : IAmbientSplService
+public sealed class AmbientSplService(IInputAudioDeviceProvider inputAudioDeviceProvider) : IAmbientSplService
 {
     private readonly List<InstantaneousAmbientSpl> _historicalInstantaneousAmbientSpls = [];
     private readonly object _historyLock = new();
 
     public InstantaneousAmbientSpl MeasureInstantaneousAmbientSpl()
     {
-        var sensor = defaultInputSplSensorProvider.GetCurrentDefaultInputSensor();
+        var sensor = inputAudioDeviceProvider
+            .GetCurrentDefaultInputDevice()
+            .GetSplSensor();
         var instantaneousAmbientSpl = sensor.MeasureInstantaneousAmbientSpl();
 
         lock (_historyLock)

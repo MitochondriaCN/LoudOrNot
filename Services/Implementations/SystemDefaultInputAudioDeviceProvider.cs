@@ -8,7 +8,7 @@ public sealed class SystemDefaultInputAudioDeviceProvider : IInputAudioDevicePro
 {
     private const string DefaultDeviceId = "default";
 
-    public InputAudioDevice GetCurrentDefaultInputDevice()
+    public IInputAudioDevice GetCurrentDefaultInputDevice()
     {
         if (OperatingSystem.IsMacOS())
         {
@@ -28,19 +28,19 @@ public sealed class SystemDefaultInputAudioDeviceProvider : IInputAudioDevicePro
         throw new PlatformNotSupportedException("当前操作系统不支持自动选择默认输入设备。");
     }
 
-    private static InputAudioDevice GetMacOsCurrentDefaultInputDevice()
+    private static IInputAudioDevice GetMacOsCurrentDefaultInputDevice()
     {
         var deviceId = MacOsCoreAudio.GetDefaultInputDeviceId();
         var deviceName = MacOsCoreAudio.GetDeviceName(deviceId);
 
-        return new InputAudioDevice(
+        return CreateInputAudioDevice(
             deviceId.ToString(),
             deviceName,
             "macOS 当前默认输入设备",
             "macOS");
     }
 
-    private static InputAudioDevice GetLinuxCurrentDefaultInputDevice()
+    private static IInputAudioDevice GetLinuxCurrentDefaultInputDevice()
     {
         var defaultSource = TryRunProcess("pactl", "get-default-source");
 
@@ -48,27 +48,36 @@ public sealed class SystemDefaultInputAudioDeviceProvider : IInputAudioDevicePro
         {
             var sourceName = defaultSource.Trim();
 
-            return new InputAudioDevice(
+            return CreateInputAudioDevice(
                 sourceName,
                 sourceName,
                 "PulseAudio/PipeWire 当前默认输入源",
                 "Linux");
         }
 
-        return new InputAudioDevice(
+        return CreateInputAudioDevice(
             DefaultDeviceId,
             "System default input device",
             "Linux 当前默认输入设备",
             "Linux");
     }
 
-    private static InputAudioDevice GetWindowsCurrentDefaultInputDevice()
+    private static IInputAudioDevice GetWindowsCurrentDefaultInputDevice()
     {
-        return new InputAudioDevice(
+        return CreateInputAudioDevice(
             DefaultDeviceId,
             "System default input device",
             "Windows 当前默认输入设备",
             "Windows");
+    }
+
+    private static IInputAudioDevice CreateInputAudioDevice(
+        string id,
+        string name,
+        string description,
+        string platform)
+    {
+        return new SystemInputAudioDevice(id, name, description, platform);
     }
 
     private static string? TryRunProcess(string fileName, string arguments)
@@ -99,6 +108,34 @@ public sealed class SystemDefaultInputAudioDeviceProvider : IInputAudioDevicePro
         catch
         {
             return null;
+        }
+    }
+
+    private sealed record SystemInputAudioDevice(
+        string Id,
+        string Name,
+        string Description,
+        string Platform) : IInputAudioDevice
+    {
+        public ISplSensor GetSplSensor()
+        {
+            return new UnsupportedInputSplSensor(Name, Description, Platform);
+        }
+    }
+
+    private sealed class UnsupportedInputSplSensor(
+        string inputAudioDeviceName,
+        string inputAudioDeviceDescription,
+        string inputAudioDevicePlatform) : ISplSensor
+    {
+        public string Name => inputAudioDeviceName;
+
+        public string Description => inputAudioDeviceDescription;
+
+        public InstantaneousAmbientSpl MeasureInstantaneousAmbientSpl()
+        {
+            throw new NotSupportedException(
+                $"当前默认输入设备已解析为 \"{inputAudioDeviceName}\"，但尚未配置 {inputAudioDevicePlatform} 的麦克风采样后端。");
         }
     }
 }
