@@ -1,4 +1,3 @@
-using LoudOrNot.Services;
 using LoudOrNot.Services.Abstractions;
 using LoudOrNot.Services.Implementations;
 
@@ -9,10 +8,9 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = Host.CreateApplicationBuilder(args);
-        builder.Services.AddSingleton<IInputAudioDeviceProvider, SystemDefaultInputAudioDeviceProvider>();
-        builder.Services.AddSingleton<IDefaultInputSplSensorProvider, DefaultInputSplSensorProvider>();
-        builder.Services.AddSingleton<IAmbientSplService, AmbientSplService>();
         builder.Services.AddHostedService<Worker>();
+        builder.Services.AddSingleton<IInputAudioDeviceProvider, SystemDefaultInputAudioDeviceProvider>();
+        builder.Services.AddSingleton<IAmbientSplService, AmbientSplService>();
 
         var host = builder.Build();
         host.Run();
