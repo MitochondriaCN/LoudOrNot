@@ -1,6 +1,7 @@
 using LoudOrNot.Models;
+using LoudOrNot.Services.Abstractions;
 
-namespace LoudOrNot.Services;
+namespace LoudOrNot.Services.Implementations;
 
 public sealed class AmbientSplService(IDefaultInputSplSensorProvider defaultInputSplSensorProvider)
     : IAmbientSplService

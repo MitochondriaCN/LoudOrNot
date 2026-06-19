@@ -1,6 +1,6 @@
 using LoudOrNot.Models;
 
-namespace LoudOrNot.Services;
+namespace LoudOrNot.Services.Abstractions;
 
 /// <summary>
 /// 当前默认输入设备的声压级传感器提供器

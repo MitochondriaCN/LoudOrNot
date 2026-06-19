@@ -1,6 +1,6 @@
 using LoudOrNot.Models;
 
-namespace LoudOrNot.Services;
+namespace LoudOrNot.Services.Abstractions;
 
 /// <summary>
 /// 环境声压级服务
